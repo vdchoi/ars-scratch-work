@@ -1,0 +1,114 @@
+---
+title: "Sampling"
+output: html_document
+---
+
+```{r}
+# Given a matrix of x_i, f(x_i) and f'(x_i), find the x value of 
+# the intersection points
+
+find_intersection = function(x_matrix) {
+  
+  # First ensure that the matrix is sorted
+  x_matrix = x_matrix[order(x_matrix[, 1]), ]
+  
+  z = (diff(x_matrix[, 2]) -
+        diff(x_matrix[, 3]*x_matrix[, 1])) / (-diff(x_matrix[, 3]))
+  
+  # Last, we need to add in the x intercepts
+  
+  n = nrow(x_matrix)
+  
+  start_int = x_matrix[1,1] - x_matrix[1,2]/x_matrix[1,3]
+  end_int = x_matrix[n, 1] - x_matrix[n,2]/x_matrix[n,3]
+  
+  return(c(start_int, z, end_int))
+              
+}
+```
+
+
+
+
+```{r}
+
+# Matrix to test
+x = matrix(data = c(1,3,10, 20, 1,2,3,1, 1,0.25,0.1,-0.25),
+           nrow = 4)
+
+# Test that the intersections match. Expect (0, 5/3, 7, 12, 24)
+find_intersection(x)
+```
+
+
+```{r}
+
+# The function exp_sampling takes in a matrix with 3 columns and a variable 
+# number of rows, corresponding to the x_i, f(x_i) and f'(x_i)
+# exp_sampling will return an array of x_j
+exp_sampling = function(n, x_matrix) {
+  
+  # First ensure that the matrix is sorted
+  x_matrix = x_matrix[order(x_matrix[,1]), ]
+  
+  k = nrow(x_matrix)
+  
+  # Find the intersection points of our upper hull
+  intersections = find_intersection(x_matrix)
+  
+  # First sample from a multinomial with probabilities corresponding to 
+  # the area under each piece of the adjusted piecewise upper hull
+  
+  # Get the area under the curve for each section
+  upper = x_matrix[,2] + ((intersections[2:(k+1)] - x_matrix[, 1])*x_matrix[, 3])
+  probabilities = abs(diff(exp(upper)/x_matrix[, 3]))
+  sum_prob = sum(probabilities)
+  
+  prob_vector = probabilities / sum_prob
+  
+  # Sample and return a vector of indexes
+  sample_multinom = rmultinom(n, 1, prob_vector)
+  i_vector = colSums(sample_multinom*(1:(k-1)))
+  
+  # Next let's draw n uniform variables
+  unif_draws = runif(n)
+  
+  slope_j = x_matrix[i_vector, 3]
+  z_j = intersections[i_vector]
+  constant_j = slope_j*z_j + upper[i_vector]
+  prob_indexed = prob_vector[i_vector]
+  
+  
+  sample = log(exp(slope_j*z_j) + 
+            sum_prob*slope_j*prob_indexed*exp(-constant_j)*unif_draws) / slope_j
+  
+  return(sample)
+
+  
+}
+```
+
+```{r}
+exp_sampling(10,x)
+```
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
