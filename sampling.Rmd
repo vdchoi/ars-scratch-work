@@ -28,8 +28,6 @@ find_intersection = function(x_matrix) {
 ```
 
 
-
-
 ```{r}
 
 # Matrix to test
@@ -60,6 +58,7 @@ exp_sampling = function(n, x_matrix) {
   # the area under each piece of the adjusted piecewise upper hull
   
   # Get the area under the curve for each section
+  # Maybe we should switch to the integrate function here
   upper = x_matrix[,2] + ((intersections[2:(k+1)] - x_matrix[, 1])*x_matrix[, 3])
   probabilities = abs(diff(exp(upper)/x_matrix[, 3]))
   sum_prob = sum(probabilities)
@@ -94,6 +93,56 @@ exp_sampling(10,x)
 
 
 ```{r}
+set.seed(1)
+
+x = rnorm(50)
+f_x = log(dnorm(x))
+
+func_temp = function(x){
+  return(log(dnorm(x)))
+}
+library(numDeriv)
+
+# Problem - we're seeing gradient always being - f_x, is that correct?
+f_p_x = grad(func_temp, x)
+
+normal_test = matrix(c(x, f_x, f_p_x), nrow = 50)
+```
+
+
+```{r}
+exp_sampling(50, normal_test)
+```
+
+
+
+
+```{r}
+
+# The rejection step will take in a sample vector, a matrix of the points 
+# that have already been sampled, and the function that we are trying to sample
+rejection_step = function(sample_vector, x_matrix, f_x) {
+  
+  # Find upper and lower shell functions
+  lower_shell = lower_shell_func(x_matrix)
+  upper_shell = upper_shell_func(x_matrix)
+  
+  # Uniform Sample
+  unif_w = runif(n = length(sample_vector))
+  
+  # Squeezing step
+  squeeze_step_log_vec = unif_w <= exp(lower_shell(sample_vector) - 
+                                       upper_shell(sample_vector))
+  
+  # Rejection step
+  rejection_step_log_vec = unif_w[!squeeze_step_log_vec] <= 
+                            exp(log(f_x(sample_vector[!squeeze_step_log_vec])) - 
+                               upper_shell(sample_vector[!squeeze_step_log_vec]))
+  
+  # Return accepted values
+  return(sample_vector[squeeze_step_log_vec|rejection_step_log_vec])
+  
+}
 
 ```
 
