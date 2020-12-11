@@ -99,10 +99,10 @@ uk(1.1, data)
 lk(1.1, data)
 
 # a small test on upper and lower bound
-test_x <- seq(1, 2, length.out=4)
+test_x <- seq(1, 2, length.out=100)
 test_hx <- sapply(test_x, h)
-test_uk <- unlist(sapply(test_x, uk, data=data))
-test_lk <- unlist(sapply(test_x, lk, data=data))
+test_uk <- sapply(test_x, uk, data=data)
+test_lk <- sapply(test_x, lk, data=data)
 test_hx <= test_uk
 test_hx >= test_lk
 
