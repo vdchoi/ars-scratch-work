@@ -103,8 +103,6 @@ exp_sampling = function(n, x_list) {
   # Save the intersection points of our upper hull
   intersections = x_list$z
   
-  print(intersections)
-  
   # First sample from a multinomial with probabilities corresponding to 
   # the area under each piece of the adjusted piecewise upper hull
   
@@ -116,7 +114,6 @@ exp_sampling = function(n, x_list) {
   
   prob_vector = probabilities / sum_prob
   
-  print(prob_vector)
   
   # Sample and return a vector of indexes
   sample_multinom = rmultinom(n, 1, prob_vector)
@@ -140,9 +137,6 @@ exp_sampling = function(n, x_list) {
 }
 ```
 
-```{r}
-exp_sampling(10,x)
-```
 
 
 ```{r}
@@ -189,24 +183,47 @@ rejection_step = function(sample_vector, x_list, f_x) {
   
   # Squeezing step
   
-  squeeze_step_log_vec = unif_w <= exp(lower_shell - upper_shell)
+  log_vec = unif_w <= exp(lower_shell - upper_shell)
   
   # Rejection step
-  rejection_step_log_vec = unif_w[!squeeze_step_log_vec] <= 
-                            exp(log(f_x(sample_vector[!squeeze_step_log_vec])) - 
-                               upper_shell[!squeeze_step_log_vec])
+  rejection_step_log_vec = unif_w[!log_vec] <= 
+                            exp(log(f_x(sample_vector[!log_vec])) - 
+                               upper_shell[!log_vec])
+  
+  log_vec[which(!log_vec)] = rejection_step_log_vec
   
   # Return accepted values
-  return(sample_vector[squeeze_step_log_vec|rejection_step_log_vec])
+  return(sample_vector[log_vec])
   
 }
 
 ```
 
 
+Test with the x^2 function
+```{r}
+g <- function (x) {
+  return(x^2)
+}
+
+h <- function (x) {
+  return(log(g(x)))
+}
+
+data <- init_data(g, -2, 2)
+
+uk(1.1, data)
+lk(1.1, data)
+```
 
 
+```{r}
+hist(exp_sampling(10000, data), breaks = 20)
+```
 
+```{r}
+hist(rejection_step(exp_sampling(10000, data), data, g), breaks = 20)
+```
 
 
 
