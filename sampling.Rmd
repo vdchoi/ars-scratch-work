@@ -95,23 +95,24 @@ exp_sampling(10,x)
 ```{r}
 set.seed(1)
 
-x = rnorm(50)
+x = rnorm(500)
 f_x = log(dnorm(x))
 
 func_temp = function(x){
   return(log(dnorm(x)))
 }
+
 library(numDeriv)
 
 # Problem - we're seeing gradient always being - f_x, is that correct?
 f_p_x = grad(func_temp, x)
 
-normal_test = matrix(c(x, f_x, f_p_x), nrow = 50)
+normal_test = matrix(c(x, f_x, f_p_x), nrow = length(x))
 ```
 
 
 ```{r}
-exp_sampling(50, normal_test)
+hist(exp_sampling(50000, normal_test), breaks = 100)
 ```
 
 
