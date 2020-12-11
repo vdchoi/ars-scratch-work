@@ -4,66 +4,119 @@ output: html_document
 ---
 
 ```{r}
-# Given a matrix of x_i, f(x_i) and f'(x_i), find the x value of 
-# the intersection points
+init_data <- function (g, a, b, init_k = 20) {
+  # a <- 0
+  # b <- 1
+  # init_k <- 200
+  
+  h <- function (x) {
+    return(log(g(x)))
+  }
+  
+  # abscissa, arrays of data, excluding upper and lower bound a, b
+  x <- seq(a, b, length.out = init_k)[2:(init_k-1)]
+  gx <- sapply(x, g)
+  hx <- sapply(x, h)
+  dhx <- grad(h, x)
+  
+  k <- length(x)
+  
+  # calculate zs' using formula (1)
+  # 2:k -- j+1,  1:k-1 -- j
+  z <- (hx[2:k] - hx[1:k-1] - x[2:k] * dhx[2:k] + x[1:k-1] * dhx[1:k-1]) / (dhx[1:k-1] - dhx[2:k])
+    
+  # z's index start from 0, ends with k, i.e., z[1] represents z_0, z[k+1] represents z_k
+  z <- c(a, z, b)
+  data <- list(x = x, hx = hx, dhx = dhx, z = z, k = length(x), a = a, b = b)
+  return(data) 
+}
 
-find_intersection = function(x_matrix) {
+# x_value
+uk <- function (x_value, data) {
+  # x_value in [z_{j-1}, z_{j}]
+  j <- sum(x_value > data$z) 
+  # boundary cases
+  if (x_value == data$a){
+    j = 1
+  }
+  if (x_value == data$b){
+    j = data$k
+  }
   
-  # First ensure that the matrix is sorted
-  x_matrix = x_matrix[order(x_matrix[, 1]), ]
+  # calculating with equation (2)
+  result <- data$hx[j] + (x_value - data$x[j]) * data$dhx[j]
   
-  z = (diff(x_matrix[, 2]) -
-        diff(x_matrix[, 3]*x_matrix[, 1])) / (-diff(x_matrix[, 3]))
+  return(result)
+}
+
+lk <- function (x_value, data = data) {
+  # x_value in [x_{j}, x{j+1}]
+  j <- sum(x_value > data$x)
   
-  # Last, we need to add in the x intercepts
+  if (j == 0 || j == data$k) {
+    result <- -Inf
+  }
+  else {
+    # calculating with equation (4)
+    result <- ((data$x[j+1] - x_value) * data$hx[j] + (x_value - data$x[j]) * data$hx[j+1] )/
+      (data$x[j+1] - data$x[j])
+  }
+  return(result)
+}
+
+update_data <- function (data, new_data) {
+  # combining data and sorting
+  combined_x <- c(data$x, new_data$x)
+  combined_hx <- c(data$x, new_data$hx)
+  combined_dhx <- c(data$x, new_data$dhx)
   
-  n = nrow(x_matrix)
+  sort_order <- order(combined_x)
   
-  start_int = x_matrix[1,1] - x_matrix[1,2]/x_matrix[1,3]
-  end_int = x_matrix[n, 1] - x_matrix[n,2]/x_matrix[n,3]
+  # new arrays
+  x <- combined_x[sort_order]
+  hx <- combined_hx[sort_order]
+  dhx <- combined_dhx[sort_order]
   
-  return(c(start_int, z, end_int))
-              
+  k <- length(x)
+  data$k <- k
+  
+  # recalculate z after sorting
+  z <- (hx[2:k] - hx[1:k-1] - x[2:k] * dhx[2:k] + x[1:k-1] * dhx[1:k-1]) / (dhx[1:k-1] - dhx[2:k])
+  z <- c(data$a, z, data$b)
+  
+  data <- list(x = x, hx = hx, dhx = dhx, z = z, k = k, a = a, b = b)
+  return(data)
 }
 ```
 
 
 ```{r}
 
-# Matrix to test
-x = matrix(data = c(1,3,10, 20, 1,2,3,1, 1,0.25,0.1,-0.25),
-           nrow = 4)
-
-# Test that the intersections match. Expect (0, 5/3, 7, 12, 24)
-find_intersection(x)
-```
-
-
-```{r}
-
-# The function exp_sampling takes in a matrix with 3 columns and a variable 
-# number of rows, corresponding to the x_i, f(x_i) and f'(x_i)
+# The function exp_sampling takes in a our data structure corresponding to 
+# the x_i, hx_i and d_h_xi
 # exp_sampling will return an array of x_j
-exp_sampling = function(n, x_matrix) {
+exp_sampling = function(n, x_list) {
   
-  # First ensure that the matrix is sorted
-  x_matrix = x_matrix[order(x_matrix[,1]), ]
+  # Grab the number of rows
+  k = x_list$k
   
-  k = nrow(x_matrix)
+  # Save the intersection points of our upper hull
+  intersections = x_list$z
   
-  # Find the intersection points of our upper hull
-  intersections = find_intersection(x_matrix)
+  print(intersections)
   
   # First sample from a multinomial with probabilities corresponding to 
   # the area under each piece of the adjusted piecewise upper hull
   
   # Get the area under the curve for each section
   # Maybe we should switch to the integrate function here
-  upper = x_matrix[,2] + ((intersections[2:(k+1)] - x_matrix[, 1])*x_matrix[, 3])
-  probabilities = abs(diff(exp(upper)/x_matrix[, 3]))
+  upper = x_list$hx + ((intersections[2:(k+1)] - x_list$x)*x_list$dhx)
+  probabilities = abs(diff(exp(upper)/x_list$dhx))
   sum_prob = sum(probabilities)
   
   prob_vector = probabilities / sum_prob
+  
+  print(prob_vector)
   
   # Sample and return a vector of indexes
   sample_multinom = rmultinom(n, 1, prob_vector)
@@ -72,7 +125,7 @@ exp_sampling = function(n, x_matrix) {
   # Next let's draw n uniform variables
   unif_draws = runif(n)
   
-  slope_j = x_matrix[i_vector, 3]
+  slope_j = x_list$dhx[i_vector]
   z_j = intersections[i_vector]
   constant_j = slope_j*z_j + upper[i_vector]
   prob_indexed = prob_vector[i_vector]
@@ -95,7 +148,7 @@ exp_sampling(10,x)
 ```{r}
 set.seed(1)
 
-x = rnorm(500)
+x = c(-0.2, 0.1, 0.2)
 f_x = log(dnorm(x))
 
 func_temp = function(x){
@@ -110,35 +163,38 @@ f_p_x = grad(func_temp, x)
 normal_test = matrix(c(x, f_x, f_p_x), nrow = length(x))
 ```
 
+```{r}
+exp_sampling(10, normal_test)
+```
+
 
 ```{r}
 hist(exp_sampling(50000, normal_test), breaks = 100)
 ```
 
 
-
-
 ```{r}
 
 # The rejection step will take in a sample vector, a matrix of the points 
 # that have already been sampled, and the function that we are trying to sample
-rejection_step = function(sample_vector, x_matrix, f_x) {
+rejection_step = function(sample_vector, x_list, f_x) {
   
   # Find upper and lower shell functions
-  lower_shell = lower_shell_func(x_matrix)
-  upper_shell = upper_shell_func(x_matrix)
+  
+  lower_shell = sapply(sample_vector, lk, data=x_list)
+  upper_shell = sapply(sample_vector, uk, data=x_list)
   
   # Uniform Sample
   unif_w = runif(n = length(sample_vector))
   
   # Squeezing step
-  squeeze_step_log_vec = unif_w <= exp(lower_shell(sample_vector) - 
-                                       upper_shell(sample_vector))
+  
+  squeeze_step_log_vec = unif_w <= exp(lower_shell - upper_shell)
   
   # Rejection step
   rejection_step_log_vec = unif_w[!squeeze_step_log_vec] <= 
                             exp(log(f_x(sample_vector[!squeeze_step_log_vec])) - 
-                               upper_shell(sample_vector[!squeeze_step_log_vec]))
+                               upper_shell[!squeeze_step_log_vec])
   
   # Return accepted values
   return(sample_vector[squeeze_step_log_vec|rejection_step_log_vec])
