@@ -152,6 +152,8 @@ exp_sampling = function(n, x_list) {
   # Maybe we should switch to the integrate function here
   upper = sapply(x_list$x, uk, data=x_list)
   
+  # To fix - Need to add lower and upper bounds
+  
   probabilities = abs(diff(exp(upper)/x_list$dhx))
   sum_prob = sum(probabilities)
   prob_vector = probabilities / sum_prob
@@ -170,11 +172,31 @@ exp_sampling = function(n, x_list) {
   
   prob_indexed = prob_vector[i_vector]
   
-  print('sample')
+  
+  find_sample = function(slope_j, z_j, sum_prob, prob_indexed, 
+                         constant_j, unif_draws) {
+    
+    if (abs(slope_j) < 0.00000001) {
+      return(exp(upper[i_vector])*prob_indexed*sum_prob*unif_draws + z_j)
+      
+    }
+    else {
+      return(log(exp(slope_j*z_j) + 
+            sum_prob*slope_j*prob_indexed*exp(-constant_j)*unif_draws) / slope_j)
+    }
+  }
+  
+  
+  # To fix - Sometimes is negative
+  print(exp(slope_j*z_j) + sum_prob*slope_j*prob_indexed*exp(-constant_j)*unif_draws)
+  
+  
+  
   sample = log(exp(slope_j*z_j) + 
             sum_prob*slope_j*prob_indexed*exp(-constant_j)*unif_draws) / slope_j
   
-  print('return')
+  
+  
   return(sample)
 
   
@@ -256,7 +278,7 @@ data2 <- init_data(g2, -Inf, Inf)
 
 
 ```{r}
-exp_sampling(1000, data2)
+exp_sampling(100, data2)
 ```
 
 ```{r}
