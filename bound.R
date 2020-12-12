@@ -11,7 +11,13 @@ init_data <- function (g, a, b, init_k = 20) {
   }
   
   # abscissa, arrays of data, excluding uppper and lower bound a, b
-  x <- seq(a, b, length.out = init_k)[2:(init_k-1)]
+  
+  x <- init_abscissa(h, a, b, init_k = 20)
+  
+  if (a != -Inf && b != Inf) {
+    x <- seq(a, b, length.out = init_k)[2:(init_k-1)]
+  }
+  
   gx <- sapply(x, g)
   hx <- sapply(x, h)
   dhx <- grad(h, x)
@@ -26,6 +32,41 @@ init_data <- function (g, a, b, init_k = 20) {
   z <- c(a, z, b)
   data <- list(x = x, hx = hx, dhx = dhx, z = z, k = length(x), a = a, b = b)
   return(data) 
+}
+
+init_abscissa <- function(h, a, b, init_k = 20) {
+  
+  # both finite
+  if (a != -Inf && b != Inf){
+    return(seq(a, b, length.out = init_k+2)[2:(init_k+1)])
+  }
+  
+  # if infinite on left side, find x_0, s.t. dhx_0 > 0
+  if (a == -Inf){
+    x_0 <- -10
+    while (grad(h, x_0) <= 0){
+      x_0 <- x_0 * 2
+    }
+  }
+  # else set a finite left bound
+  else {
+    x_0 = a + 1
+  }
+  
+  # similarly if infinte on right side
+  if (b == Inf){
+    x_k <- 10
+    while (grad(h, x_k) >= 0){
+      x_k <- x_k * 2
+    }
+  }
+  else {
+    x_k = b - 1
+  }
+  
+  x <- seq(x_0, x_k, length.out = init_k)
+  
+  return(x)
 }
 
 # x_value
@@ -85,28 +126,60 @@ update_data <- function (data, new_data) {
   return(data)
 }
 
-g <- function (x) {
+
+
+g1 <- function (x) {
   return(x^2)
 }
 
-h <- function (x) {
+h1 <- function (x) {
   return(log(g(x)))
 }
 
-data <- init_data(g, 1, 2)
+g2 <- function (x) {
+  return(dnorm(x))
+}
+
+h2 <- function(x) {
+  return(log(g2(x)))
+}
+
+
+init_abscissa(h1, 1, 2)
+init_abscissa(h2, -Inf, Inf)
+
+data1 <- init_data(g1, 1, 2)
+data2 <- init_data(g2, -Inf, Inf)
 
 uk(1.1, data)
 lk(1.1, data)
 
-# a small test on upper and lower bound
-test_x <- seq(1, 2, length.out=100)
-test_hx <- sapply(test_x, h)
-test_uk <- sapply(test_x, uk, data=data)
-test_lk <- sapply(test_x, lk, data=data)
+# a small test on x^2, finite bound
+test_x <- seq(1, 2, length.out=5)
+test_hx <- sapply(test_x, h1)
+test_uk <- sapply(test_x, uk, data=data1)
+test_lk <- sapply(test_x, lk, data=data1)
 test_hx <= test_uk
 test_hx >= test_lk
 
-plot(test_x,  test_hx, type='l')
+plot_x <- seq(1, 2, length.out=10000)
+plot_hx <- sapply(plot_x, h1)
+plot(plot_x, plot_hx, type='l')
+lines(test_x,  test_uk, type='l', col='blue')
+lines(test_x,  test_lk, type='l', col='green')
+
+# small test on normal distribution (infinite bound)
+
+test_x <- seq(-10, 10, length.out=5)
+test_hx <- sapply(test_x, h2)
+test_uk <- sapply(test_x, uk, data=data2)
+test_lk <- sapply(test_x, lk, data=data2)
+test_hx <= test_uk
+test_hx >= test_lk
+
+plot_x <- seq(-10, 10, length.out=10000)
+plot_hx <- sapply(plot_x, h2)
+plot(plot_x, plot_hx, type='l')
 lines(test_x,  test_uk, type='l', col='blue')
 lines(test_x,  test_lk, type='l', col='green')
 
