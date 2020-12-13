@@ -4,6 +4,11 @@ output: html_document
 ---
 
 ```{r}
+
+```
+
+
+```{r}
 init_data <- function (g, a, b, init_k = 20) {
   # a <- 0
   # b <- 1
@@ -137,7 +142,7 @@ update_data <- function (data, new_data) {
 # The function exp_sampling takes in a our data structure corresponding to 
 # the x_i, hx_i and d_h_xi
 # exp_sampling will return an array of x_j
-exp_sampling = function(n, x_list) {
+exp_sampling = function(n, x_list, function_temp) {
   
   # Grab the number of rows
   k = x_list$k
@@ -152,50 +157,29 @@ exp_sampling = function(n, x_list) {
   # Maybe we should switch to the integrate function here
   upper = sapply(x_list$x, uk, data=x_list)
   
-  # To fix - Need to add lower and upper bounds
+  # To check - do we add the function into our data structure
   
-  probabilities = abs(diff(exp(upper)/x_list$dhx))
+  probabilities = abs(diff(exp(function_temp(intersections)))/(x_list$dhx))
   sum_prob = sum(probabilities)
   prob_vector = probabilities / sum_prob
-  
   
   # Sample and return a vector of indexes
   sample_multinom = rmultinom(n, 1, prob_vector)
   
-  i_vector = colSums(sample_multinom*(1:(k-1)))
+  i_vector = colSums(sample_multinom*(1:k))
   
   # Next let's draw n uniform variables
   unif_draws = runif(n)
   slope_j = x_list$dhx[i_vector]
   z_j = intersections[i_vector]
+  z_j_1 = intersections[i_vector+1]
   constant_j = slope_j*z_j + upper[i_vector]
   
-  prob_indexed = prob_vector[i_vector]
-  
-  
-  find_sample = function(slope_j, z_j, sum_prob, prob_indexed, 
-                         constant_j, unif_draws) {
-    
-    if (abs(slope_j) < 0.00000001) {
-      return(exp(upper[i_vector])*prob_indexed*sum_prob*unif_draws + z_j)
-      
-    }
-    else {
-      return(log(exp(slope_j*z_j) + 
-            sum_prob*slope_j*prob_indexed*exp(-constant_j)*unif_draws) / slope_j)
-    }
-  }
-  
-  
-  # To fix - Sometimes is negative
-  print(exp(slope_j*z_j) + sum_prob*slope_j*prob_indexed*exp(-constant_j)*unif_draws)
-  
+  ac_pi = (exp(z_j_1*slope_j) - exp(z_j*slope_j)) * exp(constant_j)
   
   
   sample = log(exp(slope_j*z_j) + 
-            sum_prob*slope_j*prob_indexed*exp(-constant_j)*unif_draws) / slope_j
-  
-  
+           ac_pi*exp(-constant_j)*unif_draws) / slope_j
   
   return(sample)
 
@@ -255,11 +239,11 @@ lk(1.1, data)
 
 
 ```{r}
-hist(exp_sampling(10000, data), breaks = 20)
+hist(exp_sampling(10000, data, h), breaks = 20)
 ```
 
 ```{r}
-hist(rejection_step(exp_sampling(10000, data), data, g), breaks = 20)
+hist(rejection_step(exp_sampling(10000, data, h), data, g), breaks = 20)
 ```
 
 
@@ -278,17 +262,13 @@ data2 <- init_data(g2, -Inf, Inf)
 
 
 ```{r}
-exp_sampling(100, data2)
+exp_sampling(100, data2, h2)
 ```
 
 ```{r}
-hist(rejection_step(exp_sampling(100, data2), data2, g2), breaks = 20)
+hist(rejection_step(exp_sampling(10000, data2, h2), data2, g2), breaks = 30)
 ```
 
-```{r}
-set.seed(1)
-exp_sampling(1000, data2)
-```
 
 
 
