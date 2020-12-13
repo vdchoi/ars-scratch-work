@@ -192,7 +192,7 @@ exp_sampling = function(n, x_list, function_temp) {
 
 # The rejection step will take in a sample vector, a matrix of the points 
 # that have already been sampled, and the function that we are trying to sample
-rejection_step = function(sample_vector, x_list, f_x) {
+rejection_step = function(sample_vector, x_list, h_x) {
   
   # Find upper and lower shell functions
   
@@ -207,14 +207,24 @@ rejection_step = function(sample_vector, x_list, f_x) {
   log_vec = unif_w <= exp(lower_shell - upper_shell)
   
   # Rejection step
+  
+  eval_x = sample_vector[!log_vec]
+  eval_h_x = h_x(eval_x)
+  eval_d_h_x = grad(h_x, eval_x)
+  
+  
   rejection_step_log_vec = unif_w[!log_vec] <= 
-                            exp(log(f_x(sample_vector[!log_vec])) - 
-                               upper_shell[!log_vec])
+                            exp(eval_h_x - upper_shell[!log_vec])
   
   log_vec[which(!log_vec)] = rejection_step_log_vec
   
+  
+  
   # Return accepted values
-  return(sample_vector[log_vec])
+  return(list(sample = sample_vector[log_vec], 
+              eval_x = eval_x,
+              eval_h_x = eval_h_x,
+              eval_d_h_x = eval_d_h_x))
   
 }
 
@@ -243,8 +253,13 @@ hist(exp_sampling(10000, data, h), breaks = 20)
 ```
 
 ```{r}
-hist(rejection_step(exp_sampling(10000, data, h), data, g), breaks = 20)
+hist(rejection_step(exp_sampling(10000, data, h), data, h)$sample, breaks = 20)
 ```
+```{r}
+temp = rejection_step(exp_sampling(1000, data, h), data, g)
+```
+
+
 
 
 ```{r}
@@ -266,7 +281,7 @@ exp_sampling(100, data2, h2)
 ```
 
 ```{r}
-hist(rejection_step(exp_sampling(10000, data2, h2), data2, g2), breaks = 30)
+hist(rejection_step(exp_sampling(10000, data2, h2), data2, h2)$sample, breaks = 30)
 ```
 
 
