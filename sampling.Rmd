@@ -4,6 +4,11 @@ output: html_document
 ---
 
 ```{r}
+
+```
+
+
+```{r}
 init_data <- function (g, a, b, init_k = 20) {
   # a <- 0
   # b <- 1
@@ -13,8 +18,14 @@ init_data <- function (g, a, b, init_k = 20) {
     return(log(g(x)))
   }
   
-  # abscissa, arrays of data, excluding upper and lower bound a, b
-  x <- seq(a, b, length.out = init_k)[2:(init_k-1)]
+  # abscissa, arrays of data, excluding uppper and lower bound a, b
+  
+  x <- init_abscissa(h, a, b, init_k = 20)
+  
+  if (a != -Inf && b != Inf) {
+    x <- seq(a, b, length.out = init_k)[2:(init_k-1)]
+  }
+  
   gx <- sapply(x, g)
   hx <- sapply(x, h)
   dhx <- grad(h, x)
@@ -29,6 +40,41 @@ init_data <- function (g, a, b, init_k = 20) {
   z <- c(a, z, b)
   data <- list(x = x, hx = hx, dhx = dhx, z = z, k = length(x), a = a, b = b)
   return(data) 
+}
+
+init_abscissa <- function(h, a, b, init_k = 20) {
+  
+  # both finite
+  if (a != -Inf && b != Inf){
+    return(seq(a, b, length.out = init_k+2)[2:(init_k+1)])
+  }
+  
+  # if infinite on left side, find x_0, s.t. dhx_0 > 0
+  if (a == -Inf){
+    x_0 <- -10
+    while (grad(h, x_0) <= 0){
+      x_0 <- x_0 * 2
+    }
+  }
+  # else set a finite left bound
+  else {
+    x_0 = a + 1
+  }
+  
+  # similarly if infinte on right side
+  if (b == Inf){
+    x_k <- 10
+    while (grad(h, x_k) >= 0){
+      x_k <- x_k * 2
+    }
+  }
+  else {
+    x_k = b - 1
+  }
+  
+  x <- seq(x_0, x_k, length.out = init_k)
+  
+  return(x)
 }
 
 # x_value
@@ -87,6 +133,7 @@ update_data <- function (data, new_data) {
   data <- list(x = x, hx = hx, dhx = dhx, z = z, k = k, a = a, b = b)
   return(data)
 }
+
 ```
 
 
@@ -95,7 +142,7 @@ update_data <- function (data, new_data) {
 # The function exp_sampling takes in a our data structure corresponding to 
 # the x_i, hx_i and d_h_xi
 # exp_sampling will return an array of x_j
-exp_sampling = function(n, x_list) {
+exp_sampling = function(n, x_list, function_temp) {
   
   # Grab the number of rows
   k = x_list$k
@@ -108,60 +155,34 @@ exp_sampling = function(n, x_list) {
   
   # Get the area under the curve for each section
   # Maybe we should switch to the integrate function here
-  upper = x_list$hx + ((intersections[2:(k+1)] - x_list$x)*x_list$dhx)
-  probabilities = abs(diff(exp(upper)/x_list$dhx))
+  upper = sapply(x_list$x, uk, data=x_list)
+  
+  # To check - do we add the function into our data structure
+  
+  probabilities = abs(diff(exp(function_temp(intersections)))/(x_list$dhx))
   sum_prob = sum(probabilities)
-  
   prob_vector = probabilities / sum_prob
-  
   
   # Sample and return a vector of indexes
   sample_multinom = rmultinom(n, 1, prob_vector)
-  i_vector = colSums(sample_multinom*(1:(k-1)))
+  
+  i_vector = colSums(sample_multinom*(1:k))
   
   # Next let's draw n uniform variables
   unif_draws = runif(n)
-  
   slope_j = x_list$dhx[i_vector]
   z_j = intersections[i_vector]
+  z_j_1 = intersections[i_vector+1]
   constant_j = slope_j*z_j + upper[i_vector]
-  prob_indexed = prob_vector[i_vector]
+  
+  ac_pi = (exp(z_j_1*slope_j) - exp(z_j*slope_j)) * exp(constant_j)
   
   
   sample = log(exp(slope_j*z_j) + 
-            sum_prob*slope_j*prob_indexed*exp(-constant_j)*unif_draws) / slope_j
+           ac_pi*exp(-constant_j)*unif_draws) / slope_j
   
   return(sample)
 }
-```
-
-
-
-```{r}
-set.seed(1)
-
-x = c(-0.2, 0.1, 0.2)
-f_x = log(dnorm(x))
-
-func_temp = function(x){
-  return(log(dnorm(x)))
-}
-
-library(numDeriv)
-
-# Problem - we're seeing gradient always being - f_x, is that correct?
-f_p_x = grad(func_temp, x)
-
-normal_test = matrix(c(x, f_x, f_p_x), nrow = length(x))
-```
-
-```{r}
-exp_sampling(10, normal_test)
-```
-
-
-```{r}
-hist(exp_sampling(50000, normal_test), breaks = 100)
 ```
 
 
@@ -169,7 +190,7 @@ hist(exp_sampling(50000, normal_test), breaks = 100)
 
 # The rejection step will take in a sample vector, a matrix of the points 
 # that have already been sampled, and the function that we are trying to sample
-rejection_step = function(sample_vector, x_list, f_x) {
+rejection_step = function(sample_vector, x_list, h_x) {
   
   # Find upper and lower shell functions
   
@@ -184,14 +205,24 @@ rejection_step = function(sample_vector, x_list, f_x) {
   log_vec = unif_w <= exp(lower_shell - upper_shell)
   
   # Rejection step
+  
+  eval_x = sample_vector[!log_vec]
+  eval_h_x = h_x(eval_x)
+  eval_d_h_x = grad(h_x, eval_x)
+  
+  
   rejection_step_log_vec = unif_w[!log_vec] <= 
-                            exp(log(f_x(sample_vector[!log_vec])) - 
-                               upper_shell[!log_vec])
+                            exp(eval_h_x - upper_shell[!log_vec])
   
   log_vec[which(!log_vec)] = rejection_step_log_vec
   
+  
+  
   # Return accepted values
-  return(sample_vector[log_vec])
+  return(list(sample = sample_vector[log_vec], 
+              eval_x = eval_x,
+              eval_h_x = eval_h_x,
+              eval_d_h_x = eval_d_h_x))
   
 }
 
@@ -216,16 +247,40 @@ lk(1.1, data)
 
 
 ```{r}
-hist(exp_sampling(10000, data), breaks = 20)
+hist(exp_sampling(10000, data, h), breaks = 20)
 ```
 
 ```{r}
-hist(rejection_step(exp_sampling(10000, data), data, g), breaks = 20)
+hist(rejection_step(exp_sampling(10000, data, h), data, h)$sample, breaks = 20)
+```
+```{r}
+temp = rejection_step(exp_sampling(1000, data, h), data, g)
 ```
 
 
 
 
+```{r}
+g2 <- function (x) {
+  return(dnorm(x))
+}
+
+h2 <- function(x) {
+  return(log(g2(x)))
+}
+
+init_abscissa(h2, -Inf, Inf)
+data2 <- init_data(g2, -Inf, Inf)
+```
+
+
+```{r}
+exp_sampling(100, data2, h2)
+```
+
+```{r}
+hist(rejection_step(exp_sampling(10000, data2, h2), data2, h2)$sample, breaks = 30)
+```
 
 
 
