@@ -1,24 +1,11 @@
 library(numDeriv)
 # f is the function, a and b are its range
 # assuming a, b are real numbers for now
-init_data <- function (g, a, b, init_k = 20) {
-  # a <- 0
-  # b <- 1
-  # init_k <- 200
-  
-  h <- function (x) {
-    return(log(g(x)))
-  }
-  
+init_data <- function (h, a, b) {
   # abscissa, arrays of data, excluding uppper and lower bound a, b
   
-  x <- init_abscissa(h, a, b, init_k = 20)
+  x <- init_abscissa(h, a, b)
   
-  if (a != -Inf && b != Inf) {
-    x <- seq(a, b, length.out = init_k)[2:(init_k-1)]
-  }
-  
-  gx <- sapply(x, g)
   hx <- sapply(x, h)
   dhx <- grad(h, x)
   
@@ -105,8 +92,8 @@ lk <- function (x_value, data = data) {
 update_data <- function (data, new_data) {
   # combining data and sorting
   combined_x <- c(data$x, new_data$x)
-  combined_hx <- c(data$x, new_data$hx)
-  combined_dhx <- c(data$x, new_data$dhx)
+  combined_hx <- c(data$hx, new_data$hx)
+  combined_dhx <- c(data$dhx, new_data$dhx)
   
   sort_order <- order(combined_x)
   
@@ -122,14 +109,7 @@ update_data <- function (data, new_data) {
   z <- (hx[2:k] - hx[1:k-1] - x[2:k] * dhx[2:k] + x[1:k-1] * dhx[1:k-1]) / (dhx[1:k-1] - dhx[2:k])
   z <- c(data$a, z, data$b)
   
-  data <- list(x = x, hx = hx, dhx = dhx, z = z, k = k, a = a, b = b)
+  data <- list(x = x, hx = hx, dhx = dhx, z = z, k = k, a = data$a, b = data$b)
   return(data)
 }
-
-
-
-
-
-
-
 

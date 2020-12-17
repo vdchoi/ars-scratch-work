@@ -13,7 +13,7 @@ test_that("The upper bound and lower bound hold for a finite domain pdf function
   }
   
   init_abscissa(h1, 1, 2)
-  data1 <- init_data(g1, 1, 2)
+  data1 <- init_data(h1, 1, 2)
   
   test_x <- seq(1, 2, length.out=50)
   test_hx <- sapply(test_x, h1)
@@ -34,7 +34,7 @@ test_that("The upper bound and lower bound hold in a infinite domain pdf functio
   }
   
   init_abscissa(h2, -Inf, Inf)
-  data2 <- init_data(g2, -Inf, Inf)
+  data2 <- init_data(h2, -Inf, Inf)
   
   test_x <- seq(-10, 10, length.out=50)
   test_hx <- sapply(test_x, h2)
