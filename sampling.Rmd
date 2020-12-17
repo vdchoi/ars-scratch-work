@@ -132,8 +132,6 @@ exp_sampling = function(n, x_list) {
             sum_prob*slope_j*prob_indexed*exp(-constant_j)*unif_draws) / slope_j
   
   return(sample)
-
-  
 }
 ```
 
