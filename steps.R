@@ -40,6 +40,8 @@ sampling_step <- function(sample_vector, data, h) {
   
   # Find upper and lower shell functions
   
+  
+  
   lower_shell <- sapply(sample_vector, lk, data=data)
   upper_shell <- sapply(sample_vector, uk, data=data)
   
