@@ -82,7 +82,7 @@ lk <- function (x_value, data) {
   #'
   #' @param x_value the position to evaluate the u_k function
   #' @param data the maintained data structure for the overall process 
-  #' @return  
+  #' @return the value of the lower envelope for l_k(x_value)
   
   # get index j for x_value in [x_{j}, x{j+1}]
   j <- sum(x_value > data$x)
