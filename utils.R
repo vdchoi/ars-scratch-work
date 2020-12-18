@@ -116,11 +116,16 @@ exp_sampling <- function(n, data, h) {
   
   # Create a vector of probabilities relative to the area between intersections
   probabilities <- abs(diff(exp(h(intersections)))/(data$dhx))
+  
+  # In edge cases where dhx equals exactly zero, set probability to 0
+  probabilities[is.na(probabilities)] <- 0
+  
   sum_prob <- sum(probabilities)
   prob_vector <- probabilities / sum_prob
   
   # Sample and return a vector of indexes
   sample_multinom <- rmultinom(n, 1, prob_vector)
+  
   i_vector <- colSums(sample_multinom*(1:k))
   
   # Draw n uniform samples
@@ -133,8 +138,8 @@ exp_sampling <- function(n, data, h) {
   constant_j <- slope_j*z_j + upper[i_vector]
   ac_pi <- (exp(z_j_1*slope_j) - exp(z_j*slope_j)) * exp(constant_j)
   
-  sample <- log(exp(slope_j*z_j) + 
-                  ac_pi*exp(-constant_j)*unif_draws) / slope_j
+  sample <- log(exp(slope_j*z_j) + ac_pi*exp(-constant_j)*unif_draws) / slope_j
+  
   
   # remove samples that are NaNs due to large slopes
   sample <- sample[!is.na(sample)]

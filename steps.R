@@ -63,7 +63,7 @@ sampling_step <- function(sample_vector, data, h) {
   eval_x <- sample_vector[!log_vec]
   eval_hx <- h(eval_x)
   eval_dhx <- grad(h, eval_x)
-  
+
   rejection_step_log_vec <- unif_w[!log_vec] <= 
     exp(eval_hx - upper_shell[!log_vec])
   
