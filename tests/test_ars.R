@@ -1,5 +1,3 @@
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-
 library(assertthat)
 library(testthat)
 source('../utils.R')

@@ -2,6 +2,7 @@ library(numDeriv)
 library(docstring)
 
 
+
 init_abscissa <- function(h, a, b, init_k = 20) {
   #' Initialize Abscissas
   #'
@@ -14,7 +15,6 @@ init_abscissa <- function(h, a, b, init_k = 20) {
   #' @param b upper bond of function domain D (could be Inf)
   #' @param init_k number of xs in the initial abscissa, default is 20
 
-  
   # both left and right finite
   if (a != -Inf && b != Inf){
     return(seq(a, b, length.out = init_k+2)[2:(init_k+1)])
