@@ -3,6 +3,25 @@
 # source('data_utils.R')
 # source('steps.R')
 
+#' Adaptive Rejection Sampler
+#'
+#' Sample from an arbitrary log-concave function. 
+#' 
+#'
+#' @param g input density function
+#' @param a lower bound of function domain D (could be -Inf)
+#' @param b upper bound of function domain D (could be Inf)
+#' @param N number of observations required 
+#' @param n_per_step Default = 100. Number of observations between
+#' each update of the hull function
+#' @return N independent observations from the the given input density
+#' @examples 
+#' g <- function (x) {
+#' return(dnorm(x))
+#' }
+
+#' ars_results <- ars(g, a = -Inf, b= Inf, N = 100000)
+#' 
 ars <- function (g, a, b, N, n_per_step = 100){
   # vector for total results
   total_sample_results <- c()
