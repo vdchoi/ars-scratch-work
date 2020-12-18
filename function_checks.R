@@ -74,6 +74,12 @@ verify_log_concavity <- function(func, a, b, npoints=10000) {
 
   # Determine sampling points to check log-concavity
   # Approximate the mean and standard deviation
+  if (func(a) == 0.00) {
+    a <- a + 1.00E-2
+  }
+  if (func(b) == 0.00) {
+    b <- b - 1.00E-2
+  }
   h <- function(x) log(func(x))
   f_mean <- function(x) x*func(x)
   mean <- integrate(f_mean, lower = a, upper = b)[[1]]
