@@ -6,6 +6,8 @@ output:
   html_document: default
 ---
 
+**Package/Code in https://github.berkeley.edu/stat243-fall-2020/victor-choi/project repo**
+
 **Overall Approach**  
 \
 Our approach to create an adaptive rejection sampling package closely follows the details described in Section 2.2 of Gilks et al (1992). At a high level, our package ‘ars’ takes in an arbitrary log-concave input density, and outputs a random sample from the input density using standard principles of rejection sampling. To improve the performance of the sampling process, we implement methods inspired from Gilks et al (1992) to limit the amount of times the input density needs to be evaluated, in order to reduce costs attributed to the evaluation of a complex input density when taking a large sample.  
