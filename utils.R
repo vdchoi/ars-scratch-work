@@ -1,8 +1,21 @@
 library(numDeriv)
+library(docstring)
+
 
 init_abscissa <- function(h, a, b, init_k = 20) {
+  #' Initialize Abscissas
+  #'
+  #' Initialize the abscissas (x vector), based on the function domain D. 
+  #' If D is bounded, select xs with equal distances, excluding the bounds
+  #' If D is left/right unbounded, select first/last x based on h's derivative values
+  #'
+  #' @param h log density function
+  #' @param a lower bond of function domain D (could be -Inf)
+  #' @param b upper bond of function domain D (could be Inf)
+  #' @param init_k number of xs in the initial abscissa, default is 20
+
   
-  # both finite
+  # both left and right finite
   if (a != -Inf && b != Inf){
     return(seq(a, b, length.out = init_k+2)[2:(init_k+1)])
   }
@@ -37,6 +50,14 @@ init_abscissa <- function(h, a, b, init_k = 20) {
 
 # x_value
 uk <- function (x_value, data) {
+  #' Upper envelope function for h (u_k in formula (2))
+  #'
+  #' Calculating the upper envelope function at point x_value, 
+  #' given the overall maintained data structure
+  #'
+  #' @param x_value the position to evaluate the u_k function
+  #' @param data the maintained data structure for the overall process
+  
   # x_value in [z_{j-1}, z_{j}]
   j <- sum(x_value > data$z) 
   # boundary cases
@@ -54,6 +75,14 @@ uk <- function (x_value, data) {
 }
 
 lk <- function (x_value, data = data) {
+  #' Lower envelope function for h (l_k in formula (4))
+  #'
+  #' Calculating the lower envelope function at point x_value, 
+  #' given the overall maintained data structure
+  #'
+  #' @param x_value the position to evaluate the u_k function
+  #' @param data the maintained data structure for the overall process  
+  
   # x_value in [x_{j}, x{j+1}]
   j <- sum(x_value > data$x)
   

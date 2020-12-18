@@ -11,7 +11,7 @@ adaptive_rejection_sampling <- function (g, a, b, N, n_per_step = 100){
     return(log(g(x)))
   }
 
-  # check log-concavity of g
+  # function checks on g
   
   
   # initialization step
