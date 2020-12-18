@@ -4,8 +4,6 @@ library(assertthat) # Pre and post assertion
 library(testthat) # Unit testing
 library(docstring)
 
-set.seed(1)
-
 verify_bounded_integral <- function(func, a, b) {
   #' Verify that a given function has a finite positive integral
   #' 

@@ -2,8 +2,29 @@
 # setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 # source('data_utils.R')
 # source('steps.R')
+library(assertthat)
 
-ars <- function (g, a, b, N, n_per_step = 100){
+#' Adaptive Rejection Sampler
+#'
+#' Sample from a log-concave density function，potentially unnormalized, 
+#' using the Adaptive Rejection Sampling method described in Gilks et al (1992)
+#' 
+#'
+#' @param g input density function
+#' @param a lower bound of function domain D (could be -Inf)
+#' @param b upper bound of function domain D (could be Inf)
+#' @param N number of observations required 
+#' @param n_per_step Default = 500. Number of observations between
+#' each update of the hull function
+#' @return A one-dimensional vector of N independent observations from the the given input density
+#' @examples 
+#' g <- function (x) {
+#' return(dnorm(x))
+#' }
+
+#' ars_results <- ars(g, a = -Inf, b= Inf, N = 100000)
+#' 
+ars <- function (g, a, b, N, n_per_step = 500){
   # vector for total results
   total_sample_results <- c()
   # define the h function
@@ -12,29 +33,16 @@ ars <- function (g, a, b, N, n_per_step = 100){
   }
 
   # function checks on g
-  
+  assert_that(verify_log_concavity(g, a, b), TRUE)
+  assert_that(verify_bounded_integral(g, a, b), TRUE)
   
   # initialization step
   data <- initialization_step(h, a, b)
   
   while (length(total_sample_results) < N) {
-    print(length(total_sample_results))
-    print(data$k)
     
     # sampling from the piecewise exponential distribution
     exp_sample_results <- exp_sampling(n_per_step, data, h)
-    
-    # result <- tryCatch({
-    # 
-    #   current_step_sample_results <- sampling_step(exp_sample_results, data, h)},
-    #   error = function (error_condition) {
-    #     
-    #     print(error_condition)
-    #     print(exp_sample_results)
-    #     print(data)
-    #     return(0)
-    # }
-    # )
     
     # rejection, and get current step results
     current_step_sample_results <- sampling_step(exp_sample_results, data, h)
