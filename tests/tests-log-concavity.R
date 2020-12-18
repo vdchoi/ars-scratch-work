@@ -105,6 +105,23 @@ test_that("Test that log-concave function passes (3)", {
   
 })
 
+
+test_that("Test that log-concave function passes (3)", {
+  
+  # Sin
+  f <- function(x) {
+    return(0.50*sin(x))
+  }
+  
+  # Get output
+  res <- verify_log_concavity(f, 0.0, pi)
+  
+  # The result should be 0
+  expect_true(res == 0)
+  
+})
+
+
 test_that("Test that not log-concave function fails", {
   
   # Example function that is not log-concave
