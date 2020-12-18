@@ -12,8 +12,7 @@ test_that("Test that density with bounded integral passes", {
   # Get output
   res <- verify_bounded_integral(f, -Inf, Inf)
   
-  # The result should be 0
-  expect_true(res == 0)
+  expect_true(res)
   
 })
 
@@ -29,8 +28,7 @@ test_that("Test that density with unbounded integral fails", {
   # Get output
   res <- verify_bounded_integral(f, 0.00, pi)
   
-  # The result should be 0
-  expect_true(res == 1)
+  expect_false(res)
   
 })
 
@@ -46,8 +44,7 @@ test_that("Test that density with unbounded integral fails (2)", {
   # Get output
   res <- verify_bounded_integral(f, 1.00, Inf)
   
-  # The result should be 0
-  expect_true(res == 1)
+  expect_false(res)
   
 })
 
@@ -67,8 +64,7 @@ test_that("Test that log-concave function passes (1)", {
   # Get output
   res <- verify_log_concavity(f, -Inf, Inf)
   
-  # The result should be 0
-  expect_true(res == 0)
+  expect_true(res)
 
 })
 
@@ -84,8 +80,7 @@ test_that("Test that log-concave function passes (2)", {
   # Get output
   res <- verify_log_concavity(f, -10, 10)
   
-  # The result should be 0
-  expect_true(res == 0)
+  expect_true(res)
   
 })
 
@@ -98,10 +93,9 @@ test_that("Test that log-concave function passes (3)", {
   }
   
   # Get output
-  res <- verify_log_concavity(f, 0.0, pi)
+  res <- verify_log_concavity(f, 0.0+1.00E-2, pi-1.00E-2)
   
-  # The result should be 0
-  expect_true(res == 0)
+  expect_true(res)
   
 })
 
@@ -114,10 +108,9 @@ test_that("Test that log-concave function passes (3)", {
   }
   
   # Get output
-  res <- verify_log_concavity(f, 0.0, pi)
+  res <- verify_log_concavity(f, 0.0+1.00E-2, pi-1.00E-2)
   
-  # The result should be 0
-  expect_true(res == 0)
+  expect_true(res)
   
 })
 
@@ -132,8 +125,7 @@ test_that("Test that not log-concave function fails", {
   # Get output
   res <- verify_log_concavity(g, 0.00, 1.00)
   
-  # The result should be 1
-  expect_true(res == 1)
+  expect_false(res)
   
 })
 
@@ -151,8 +143,7 @@ test_that("Test that not log-concave function fails (2)", {
   # Get output
   res <- verify_log_concavity(f, -Inf, Inf)
   
-  # The result should be 0
-  expect_true(res == 1)
+  expect_false(res)
   
 })
 
@@ -168,8 +159,7 @@ test_that("Test that not log-concave function fails (3)", {
   # Get output
   res <- verify_log_concavity(f, 0.10, pi/2.-0.10)
   
-  # The result should be 0
-  expect_true(res == 1)
+  expect_false(res)
   
 })
 
@@ -184,7 +174,6 @@ test_that("Test that non-positive density fails", {
   # Get output
   res <- verify_log_concavity(f, -10, 10)
   
-  # The result should be 0
-  expect_true(res == 1)
+  expect_false(res)
   
 })

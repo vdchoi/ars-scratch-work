@@ -4,6 +4,7 @@ library(assertthat) # Pre and post assertion
 library(testthat) # Unit testing
 library(docstring)
 
+set.seed(1)
 
 verify_bounded_integral <- function(func, a, b) {
   #' Verify that a given function has a finite positive integral
@@ -11,7 +12,7 @@ verify_bounded_integral <- function(func, a, b) {
   #' @param func The function that we want to check
   #' @param a The lower bound of the domain of the function. Can be -Inf.
   #' @param b The upper bound of the domain of the function. Can be +Inf.
-  #' @return 0 if the function has a finite positive integral, 1 otherwise
+  #' @return TRUE if the function has a finite positive integral, FALSE otherwise
   
   # Assertions
   # Assert that func is a function taking 1 argument
@@ -29,14 +30,14 @@ verify_bounded_integral <- function(func, a, b) {
   # of the PDF is zero
   
   if (a == -Inf) {
-    assert_that(func(a) == 0,
-                msg = 'The domain of the density function is not bounded from below, however the limit value is nonzero or indeterminate. Please check your density function.'
-    )
+    if (func(a) != 0){
+      return(FALSE)
+    }
   }
   if (b == Inf) {
-    assert_that(func(b) == 0,
-                msg = 'The domain of the density function is not bounded from above, however the limit value is nonzero. Please check your density function.'
-    )
+    if (func(b) != 0){
+      return(FALSE)
+    }
   }
   
   result = tryCatch({
@@ -44,14 +45,14 @@ verify_bounded_integral <- function(func, a, b) {
     c <- integrate(func, lower = a, upper = b)[[1]]
     # If it can, then check if the integral is positive
     if (c > 0) {
-      return(0)
+      return(TRUE)
     } else {
       # Negative integral?!
-      return(1)
+      return(FALSE)
     }
   }, error = function(error_condition) {
     print(error_condition)
-    return(1)
+    return(FALSE)
   })
   
 }
@@ -65,7 +66,7 @@ verify_log_concavity <- function(func, a, b, npoints=10000) {
   #' @param a The lower bound of the domain of the function. Can be -Inf.
   #' @param b The upper bound of the domain of the function. Can be +Inf.
   #' @param npoints: The number of samples that will be taken in the domain
-  #' @return 0 if the function is log-concave, 1 otherwise
+  #' @return TRUE if the function is log-concave, FALSE otherwise
   
   # Assertions
   assert_that(is.numeric(npoints))
@@ -81,7 +82,7 @@ verify_log_concavity <- function(func, a, b, npoints=10000) {
   f_var <- function(x) (x-mean)**2*func(x)
   variance <- integrate(f_var, lower = a, upper = b)[[1]]
   if (variance < 0.00) {
-    return(1) # The density can't be negative
+    return(FALSE) # The density can't be negative
   }
   
 
@@ -113,11 +114,11 @@ verify_log_concavity <- function(func, a, b, npoints=10000) {
   # If all differences are negative (log-concave) AND its always positive
   if (prod(differences < 0.00) & prod(f_vec>0.00)) {
     # log-concave -> 0
-    return(0)
+    return(TRUE)
   # Otherwise
   } else {
     # Not log-concave -> 1
-    return(1)
+    return(FALSE)
   }
 }
 
