@@ -93,7 +93,7 @@ test_that("Test that log-concave function passes (3)", {
   }
   
   # Get output
-  res <- verify_log_concavity(f, 0.0+1.00E-2, pi-1.00E-2)
+  res <- verify_log_concavity(f, 0.0, pi)
   
   expect_true(res)
   
@@ -108,7 +108,7 @@ test_that("Test that log-concave function passes (3)", {
   }
   
   # Get output
-  res <- verify_log_concavity(f, 0.0+1.00E-2, pi-1.00E-2)
+  res <- verify_log_concavity(f, 0.0, pi)
   
   expect_true(res)
   
@@ -157,7 +157,7 @@ test_that("Test that not log-concave function fails (3)", {
   }
   
   # Get output
-  res <- verify_log_concavity(f, 0.10, pi/2.-0.10)
+  res <- verify_log_concavity(f, 0.00+0.10, pi/2.-0.10)
   
   expect_false(res)
   
