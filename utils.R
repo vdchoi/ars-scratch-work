@@ -99,6 +99,17 @@ lk <- function (x_value, data = data) {
 
 exp_sampling <- function(n, data, function_temp) {
   
+  #' Sampling from the Piece-wise Exponential function
+  #'
+  #' Initialize the abscissas (x vector), based on the function domain D. 
+  #' If D is bounded, select xs with equal distances, excluding the bounds
+  #' If D is left/right unbounded, select first/last x based on h's derivative values
+  #'
+  #' @param h log density function
+  #' @param a lower bond of function domain D (could be -Inf)
+  #' @param b upper bond of function domain D (could be Inf)
+  #' @param init_k number of xs in the initial abscissa, default is 20
+  
   # Grab the number of rows
   k <- data$k
   

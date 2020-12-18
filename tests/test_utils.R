@@ -10,7 +10,7 @@ test_that("The upper bound and lower bound hold for a finite domain pdf function
     return(x^2)
   }
   h1 <- function (x) {
-    return(log(g(x)))
+    return(log(g1(x)))
   }
 
   init_abscissa(h1, 1, 2)
