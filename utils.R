@@ -99,51 +99,38 @@ lk <- function (x_value, data) {
 }
 
 exp_sampling <- function(n, data, h) {
-  
-  #' Sampling from the Piece-wise Exponential function
+  #' Sample from a Piece-wise Exponential function
   #'
-  #' Initialize the abscissas (x vector), based on the function domain D. 
-  #' If D is bounded, select xs with equal distances, excluding the bounds
-  #' If D is left/right unbounded, select first/last x based on h's derivative values
+  #' Generate a sample of length n from the current data and the function h
   #'
+  #' @param n number of samples
+  #' @param data data structure output from the initialization_step function
   #' @param h log density function
-  #' @param a lower bond of function domain D (could be -Inf)
-  #' @param b upper bond of function domain D (could be Inf)
-  #' @param init_k number of xs in the initial abscissa, default is 20
+  #' @return a vector of length n of samples from a piece-wise exponential corresponding to function h
   
-  # Grab the number of rows
+  # Save intermediate values for k, the intersection points, and the upper hull
   k <- data$k
-  
-  # Save the intersection points of our upper hull
   intersections <- data$z
-  
-  # First sample from a multinomial with probabilities corresponding to 
-  # the area under each piece of the adjusted piecewise upper hull
-  
-  # Get the area under the curve for each section
-  # Maybe we should switch to the integrate function here
   upper <- sapply(data$x, uk, data=data)
   
-  # To check - do we add the function into our data structure
-  
+  # Create a vector of probabilities relative to the area between intersections
   probabilities <- abs(diff(exp(h(intersections)))/(data$dhx))
   sum_prob <- sum(probabilities)
   prob_vector <- probabilities / sum_prob
   
   # Sample and return a vector of indexes
   sample_multinom <- rmultinom(n, 1, prob_vector)
-  
   i_vector <- colSums(sample_multinom*(1:k))
   
-  # Next let's draw n uniform variables
+  # Draw n uniform samples
   unif_draws <- runif(n)
+  
+  # Use inverse transform sampling to transform uniform samples
   slope_j <- data$dhx[i_vector]
   z_j <- intersections[i_vector]
   z_j_1 <- intersections[i_vector+1]
   constant_j <- slope_j*z_j + upper[i_vector]
-  
   ac_pi <- (exp(z_j_1*slope_j) - exp(z_j*slope_j)) * exp(constant_j)
-  
   
   sample <- log(exp(slope_j*z_j) + 
                   ac_pi*exp(-constant_j)*unif_draws) / slope_j
