@@ -111,6 +111,7 @@ exp_sampling <- function(n, data, h) {
   # Save intermediate values for k, the intersection points, and the upper hull
   k <- data$k
   intersections <- data$z
+  
   upper <- sapply(data$x, uk, data=data)
   
   # Create a vector of probabilities relative to the area between intersections
@@ -135,6 +136,9 @@ exp_sampling <- function(n, data, h) {
   sample <- log(exp(slope_j*z_j) + 
                   ac_pi*exp(-constant_j)*unif_draws) / slope_j
   
+  # remove samples that are NaNs due to large slopes
+  sample <- sample[!is.na(sample)]
+
   return(sample)
 }
 
