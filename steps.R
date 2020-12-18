@@ -1,22 +1,36 @@
+library(docstring)
 
-# f is the function, a and b are its range
-# assuming a, b are real numbers for now
 initialization_step <- function (h, a, b) {
-  # abscissa, arrays of data, excluding uppper and lower bound a, b
+  #' Initialize Step
+  #'
+  #' Initialize the data structure we maintain given the log density function h as input, 
+  #' as described in 2.2.1. 
+  #' We calculate the initial abscissa, h(x) vector, h'(x) vector, 
+  #' and z vector needed for further computation
+  #'
+  #' @param h log density function
+  #' @param a lower bound of function domain D (could be -Inf)
+  #' @param b upper bound of function domain D (could be Inf)
+  #' @return a list, the main data structure we will work with, containing
+  #' x, h(x), d'(x), z, and other information
   
+  # get the initial abscissa vector 
   x <- init_abscissa(h, a, b)
   
+  # calculated needed information, h(x) and h'(x)
   hx <- sapply(x, h)
   dhx <- grad(h, x)
   
   k <- length(x)
   
-  # calculate zs' using formula (1)
-  # 2:k -- j+1,  1:k-1 -- j
+  # calculate z vector using formula (1)
+  # 2:k -- indexing with (j+1),  1:k-1 -- indexing with j
   z <- (hx[2:k] - hx[1:k-1] - x[2:k] * dhx[2:k] + x[1:k-1] * dhx[1:k-1]) / (dhx[1:k-1] - dhx[2:k])
   
   # z's index start from 0, ends with k, i.e., z[1] represents z_0, z[k+1] represents z_k
   z <- c(a, z, b)
+  
+  # construct the main data structure we work with in this project
   data <- list(x = x, hx = hx, dhx = dhx, z = z, k = length(x), a = a, b = b)
   return(data) 
 }
@@ -54,6 +68,19 @@ sampling_step <- function(sample_vector, data, h) {
 }
 
 update_step <- function (data, new_data) {
+  #' Update Step
+  #'
+  #' Combine old data with newly computed data, 
+  #' giving a new set of abscissa, and relevant information,
+  #' as described in 2.2.3. 
+  #' We combine the x, h(x), h'(x) values, and sort them based on x values,
+  #' then calculate the new z vector, and return updated data structure
+  #'
+  #' @param data a list, the main data structure
+  #' @param new_data a list, the data structure with similar members 
+  #' but with newly calculated x, h(x) and h'(x)
+  #' @return a list, the updated main data structure
+  
   # combining data and sorting
   combined_x <- c(data$x, new_data$x)
   combined_hx <- c(data$hx, new_data$hx)

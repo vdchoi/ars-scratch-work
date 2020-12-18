@@ -3,7 +3,7 @@
 # source('data_utils.R')
 # source('steps.R')
 
-adaptive_rejection_sampling <- function (g, a, b, N, n_per_step = 100){
+ars <- function (g, a, b, N, n_per_step = 100){
   # vector for total results
   total_sample_results <- c()
   # define the h function
