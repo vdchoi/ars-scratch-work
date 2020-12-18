@@ -6,16 +6,17 @@ library(assertthat)
 
 #' Adaptive Rejection Sampler
 #'
-#' Sample from an arbitrary log-concave function. 
+#' Sample from a log-concave density function，potentially unnormalized, 
+#' using the Adaptive Rejection Sampling method described in Gilks et al (1992)
 #' 
 #'
 #' @param g input density function
 #' @param a lower bound of function domain D (could be -Inf)
 #' @param b upper bound of function domain D (could be Inf)
 #' @param N number of observations required 
-#' @param n_per_step Default = 100. Number of observations between
+#' @param n_per_step Default = 500. Number of observations between
 #' each update of the hull function
-#' @return N independent observations from the the given input density
+#' @return A one-dimensional vector of N independent observations from the the given input density
 #' @examples 
 #' g <- function (x) {
 #' return(dnorm(x))
@@ -23,7 +24,7 @@ library(assertthat)
 
 #' ars_results <- ars(g, a = -Inf, b= Inf, N = 100000)
 #' 
-ars <- function (g, a, b, N, n_per_step = 100){
+ars <- function (g, a, b, N, n_per_step = 500){
   # vector for total results
   total_sample_results <- c()
   # define the h function
@@ -34,7 +35,6 @@ ars <- function (g, a, b, N, n_per_step = 100){
   # function checks on g
   assert_that(verify_log_concavity(g, a, b), TRUE)
   assert_that(verify_bounded_integral(g, a, b), TRUE)
-  
   
   # initialization step
   data <- initialization_step(h, a, b)
