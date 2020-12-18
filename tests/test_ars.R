@@ -6,7 +6,7 @@ source('../ars.R')
 
 test_that("Test ARS on standard normal distribution, 
           comparing mean/std with theoretical values 0/1", {
-  set.seed(0)
+  set.seed(1)
   g <- function (x) {
     return(dnorm(x))
   }
@@ -19,7 +19,7 @@ test_that("Test ARS on standard normal distribution,
 
 test_that("Test ARS on the (unnormalized) square function distribution (D = [0,1]), 
           comparing mean, std with theoretical values 3/4, 1/4 * sqrt(3/5)", {
-  set.seed(0)
+  set.seed(1)
   g <- function (x) {
     return(x^2)
   }

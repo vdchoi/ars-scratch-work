@@ -1,4 +1,5 @@
 library(docstring)
+library(assertthat)
 
 initialization_step <- function (h, a, b) {
   #' Initialize Step
@@ -62,7 +63,7 @@ sampling_step <- function(sample_vector, data, h) {
   eval_x <- sample_vector[!log_vec]
   eval_hx <- h(eval_x)
   eval_dhx <- grad(h, eval_x)
-  
+
   rejection_step_log_vec <- unif_w[!log_vec] <= 
     exp(eval_hx - upper_shell[!log_vec])
   
@@ -88,6 +89,18 @@ update_step <- function (data, new_data) {
   #' @param new_data a list, the data structure with similar members 
   #' but with newly calculated x, h(x) and h'(x)
   #' @return a list, the updated main data structure
+  
+  # checking inputs
+  assert_that(is.list(data))
+  assert_that(is.list(new_data))
+  
+  assert_that(is.vector(data$x))
+  assert_that(is.vector(data$hx))
+  assert_that(is.vector(data$dhx))
+  
+  assert_that(is.vector(new_data$x))
+  assert_that(is.vector(new_data$hx))
+  assert_that(is.vector(new_data$dhx))
   
   # combining data and sorting
   combined_x <- c(data$x, new_data$x)
