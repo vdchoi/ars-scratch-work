@@ -55,4 +55,3 @@ verify_bounded_integral <- function(func, a, b) {
 }
 
 
-test_file("tests/tests-bounded-integral.R")
