@@ -2,6 +2,7 @@
 # setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 # source('data_utils.R')
 # source('steps.R')
+library(assertthat)
 
 ars <- function (g, a, b, N, n_per_step = 100){
   # vector for total results
@@ -12,6 +13,8 @@ ars <- function (g, a, b, N, n_per_step = 100){
   }
 
   # function checks on g
+  assert_that(verify_log_concavity(g, a, b), TRUE)
+  assert_that(verify_bounded_integral(g, a, b), TRUE)
   
   
   # initialization step

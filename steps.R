@@ -93,11 +93,11 @@ update_step <- function (data, new_data) {
   # checking inputs
   assert_that(is.list(data))
   assert_that(is.list(new_data))
-  
+
   assert_that(is.vector(data$x))
   assert_that(is.vector(data$hx))
   assert_that(is.vector(data$dhx))
-  
+
   assert_that(is.vector(new_data$x))
   assert_that(is.vector(new_data$hx))
   assert_that(is.vector(new_data$dhx))

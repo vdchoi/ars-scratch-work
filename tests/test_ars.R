@@ -1,5 +1,6 @@
 library(assertthat)
 library(testthat)
+source('../function_checks.R')
 source('../utils.R')
 source('../steps.R')
 source('../ars.R')
@@ -30,7 +31,7 @@ test_that("Test ARS on the (unnormalized) square function distribution (D = [0,1
   expect_lt(abs(sd(ars_results) - 1/4 * sqrt(3/5)), 0.01)
 })
 
-test_that("Test ARS on the sine function distribution (D = [0,pi]), 
+test_that("Test ARS on the sine function distribution (D = (0,pi), 
           comparing mean, std with theoretical values pi/2, 1/2 * sqrt(-8 + pi^2)", {
   set.seed(1)
   g <- function (x) {
@@ -42,6 +43,26 @@ test_that("Test ARS on the sine function distribution (D = [0,pi]),
   expect_lt(abs(mean(ars_results) - pi/2), 0.01)
   expect_lt(abs(sd(ars_results) - 1/2 * sqrt(-8 + pi^2)), 0.01)
 })
+
+test_that("Test ARS on a density function that is not bounded (g(x) = 1, D = (-Inf, 1))", {
+  g <- function (x) {
+    return(1)
+  }
+  
+  expect_error(ars(g, a = -Inf, b = 1, N = 100000))
+})
+
+test_that("Test ARS on a density function that is not log-concave", {
+  g <- function (x) {
+    return()
+  }
+  
+  expect_error(ars(g, a = -Inf, b = 1, N = 100000))
+})
+
+
+
+
 
 
 

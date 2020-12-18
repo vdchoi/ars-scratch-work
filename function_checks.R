@@ -58,7 +58,7 @@ verify_bounded_integral <- function(func, a, b) {
 
 
 
-verify_log_concavity <- function(func, a, b, npoints=10000) {
+verify_log_concavity <- function(func, a, b, npoints = 10000) {
   #' Verify that a given function is log-concave and always positive
   #' 
   #' @param func The function that we want to check whether it's log-concave. It must take only one argument.
@@ -120,6 +120,3 @@ verify_log_concavity <- function(func, a, b, npoints=10000) {
     return(1)
   }
 }
-
-
-test_file("tests/tests-log-concavity.R")
