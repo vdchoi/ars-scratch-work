@@ -37,11 +37,18 @@ initialization_step <- function (h, a, b) {
 
 
 sampling_step <- function(sample_vector, data, h) {
+  #' Rejection Sampling Step
+  #'
+  #' Given a sample output from the exp_sampling function, perform rejection
+  #' squeezing and rejection sampling steps. Output will be a structured list
+  #' of data to update
+  #'
+  #' @param sample_vector vector of x-values. Output of exp_sampling
+  #' @param data data structure output from the initialization_step function
+  #' @param h log density function
+  #' @return output of sample data in our data structure
   
   # Find upper and lower shell functions
-  
-  
-  
   lower_shell <- sapply(sample_vector, lk, data=data)
   upper_shell <- sapply(sample_vector, uk, data=data)
   
@@ -55,7 +62,6 @@ sampling_step <- function(sample_vector, data, h) {
   eval_x <- sample_vector[!log_vec]
   eval_hx <- h(eval_x)
   eval_dhx <- grad(h, eval_x)
-  
   
   rejection_step_log_vec <- unif_w[!log_vec] <= 
     exp(eval_hx - upper_shell[!log_vec])
