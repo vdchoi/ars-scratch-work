@@ -23,7 +23,7 @@ Some of the utility functions we defined include:
 - uk(), which returns the upper enveloping function at a given point  
 - lk(), which returns the lower enveloping function at a given point  
 - init_abscissa(), which returns an set of abscissa, given an input density  
-- exp_sampling(), which returns a sample of "x" values from an input density  
+- exp_sampling(), which returns a sample of "x" values, sampling from a piece-wise exponential function of the upper hull of the input density 
 \
 **Data Structure and Updating**  
 \
@@ -48,8 +48,11 @@ This data structure is updated with the update_step function, which takes in a l
 With our utility functions and data structure, we move onto the sampling steps of the adaptive rejection sampler. The first step of the adaptive rejection sampling process is to sample from a piecewise exponential density function, corresponding to the exponent of the upper hull function of the given log input density. To do so, we split the work into two steps.  
 
 First, we choose which piece of the function to sample from. To do so, we sample from a multinomial, with a probability vector corresponding to the relative area of the upper hull between each intersection point. This will output a vector of indexes, that informs the sampler of which section of the piecewise exponential function to sample from.  
+This process is performed with the exp_sampling() function. 
 
-Next, given a vector of indexes, we transform a vector of uniform(0,1) samples to our corresponding input density, through Inverse Transform Sampling. Details described below  
+Next, given a vector of indexes, we transform a vector of uniform(0,1) samples to our corresponding input density, through Inverse Transform Sampling. 
+
+Details described below  
 
 ## Sampling from a piecewise exponential density function
 
