@@ -18,23 +18,9 @@ ars <- function (g, a, b, N, n_per_step = 100){
   data <- initialization_step(h, a, b)
   
   while (length(total_sample_results) < N) {
-    print(length(total_sample_results))
-    print(data$k)
     
     # sampling from the piecewise exponential distribution
     exp_sample_results <- exp_sampling(n_per_step, data, h)
-    
-    # result <- tryCatch({
-    # 
-    #   current_step_sample_results <- sampling_step(exp_sample_results, data, h)},
-    #   error = function (error_condition) {
-    #     
-    #     print(error_condition)
-    #     print(exp_sample_results)
-    #     print(data)
-    #     return(0)
-    # }
-    # )
     
     # rejection, and get current step results
     current_step_sample_results <- sampling_step(exp_sample_results, data, h)
