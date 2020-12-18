@@ -1,25 +1,4 @@
 library(numDeriv)
-# f is the function, a and b are its range
-# assuming a, b are real numbers for now
-init_data <- function (h, a, b) {
-  # abscissa, arrays of data, excluding uppper and lower bound a, b
-  
-  x <- init_abscissa(h, a, b)
-  
-  hx <- sapply(x, h)
-  dhx <- grad(h, x)
-  
-  k <- length(x)
-  
-  # calculate zs' using formula (1)
-  # 2:k -- j+1,  1:k-1 -- j
-  z <- (hx[2:k] - hx[1:k-1] - x[2:k] * dhx[2:k] + x[1:k-1] * dhx[1:k-1]) / (dhx[1:k-1] - dhx[2:k])
-    
-  # z's index start from 0, ends with k, i.e., z[1] represents z_0, z[k+1] represents z_k
-  z <- c(a, z, b)
-  data <- list(x = x, hx = hx, dhx = dhx, z = z, k = length(x), a = a, b = b)
-  return(data) 
-}
 
 init_abscissa <- function(h, a, b, init_k = 20) {
   
@@ -89,27 +68,47 @@ lk <- function (x_value, data = data) {
   return(result)
 }
 
-update_data <- function (data, new_data) {
-  # combining data and sorting
-  combined_x <- c(data$x, new_data$x)
-  combined_hx <- c(data$hx, new_data$hx)
-  combined_dhx <- c(data$dhx, new_data$dhx)
+exp_sampling <- function(n, data, function_temp) {
   
-  sort_order <- order(combined_x)
+  # Grab the number of rows
+  k <- data$k
   
-  # new arrays
-  x <- combined_x[sort_order]
-  hx <- combined_hx[sort_order]
-  dhx <- combined_dhx[sort_order]
+  # Save the intersection points of our upper hull
+  intersections <- data$z
   
-  k <- length(x)
-  data$k <- k
+  # First sample from a multinomial with probabilities corresponding to 
+  # the area under each piece of the adjusted piecewise upper hull
   
-  # recalculate z after sorting
-  z <- (hx[2:k] - hx[1:k-1] - x[2:k] * dhx[2:k] + x[1:k-1] * dhx[1:k-1]) / (dhx[1:k-1] - dhx[2:k])
-  z <- c(data$a, z, data$b)
+  # Get the area under the curve for each section
+  # Maybe we should switch to the integrate function here
+  upper <- sapply(data$x, uk, data=data)
   
-  data <- list(x = x, hx = hx, dhx = dhx, z = z, k = k, a = data$a, b = data$b)
-  return(data)
+  # To check - do we add the function into our data structure
+  
+  probabilities <- abs(diff(exp(function_temp(intersections)))/(data$dhx))
+  sum_prob <- sum(probabilities)
+  prob_vector <- probabilities / sum_prob
+  
+  # Sample and return a vector of indexes
+  sample_multinom <- rmultinom(n, 1, prob_vector)
+  
+  i_vector <- colSums(sample_multinom*(1:k))
+  
+  # Next let's draw n uniform variables
+  unif_draws <- runif(n)
+  slope_j <- data$dhx[i_vector]
+  z_j <- intersections[i_vector]
+  z_j_1 <- intersections[i_vector+1]
+  constant_j <- slope_j*z_j + upper[i_vector]
+  
+  ac_pi <- (exp(z_j_1*slope_j) - exp(z_j*slope_j)) * exp(constant_j)
+  
+  
+  sample <- log(exp(slope_j*z_j) + 
+                  ac_pi*exp(-constant_j)*unif_draws) / slope_j
+  
+  return(sample)
 }
+
+
 
