@@ -18,7 +18,7 @@ test_that("Initialization gives x values at correctly spaced points", {
   test_x <- seq(1, 2, length.out=22)[2:21]
   
   # Test that all values in the two arrays are near identical
-  expect_true(all.equal(data1[['x']], test_x))
+  expect_true(all.equal(data1$x, test_x))
 })
 
 
@@ -32,17 +32,50 @@ test_that("A sample from a normal gives mean of roughly 0", {
     return(log(g2(x)))
   }
   
-  data2 <- initialization_step(g2, -Inf, Inf)
+  data2 <- initialization_step(h2, -Inf, Inf)
   
   sample_x <- exp_sampling(10000, data2, h2)
   
   final_sample <- sampling_step(sample_x, data2, h2)
   
-  # Test that all values in the two arrays are near identical
+  # Test that the mean is roughly 0
   expect_true(abs(mean(final_sample$sample)) < 0.01)
   
+})
+
+test_that("Test that the update function correctly adds values and sorts", {
+  set.seed(1)
+  g2 <- function (x) {
+    return(dnorm(x))
+  }
+  
+  h2 <- function(x) {
+    return(log(g2(x)))
+  }
+  
+  data2 <- initialization_step(h2, -Inf, Inf)
+  
+  sample_x <- exp_sampling(50, data2, h2)
+  
+  final_sample <- sampling_step(sample_x, data2, h2)
+  
+  updated_data <- update_step(data2, final_sample)
+  
+  # Test that the updated data is of the proper length
+  expect_true(length(updated_data$x) == length(final_sample$x) + length(data2$x))
+  
+  # Test that the data is sorted
+  expect_true(!is.unsorted(updated_data$x))
   
 })
+
+
+
+
+
+
+
+
 
 
 

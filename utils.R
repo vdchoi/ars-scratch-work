@@ -98,7 +98,7 @@ lk <- function (x_value, data) {
   return(result)
 }
 
-exp_sampling <- function(n, data, function_temp) {
+exp_sampling <- function(n, data, h) {
   
   #' Sampling from the Piece-wise Exponential function
   #'
@@ -126,7 +126,7 @@ exp_sampling <- function(n, data, function_temp) {
   
   # To check - do we add the function into our data structure
   
-  probabilities <- abs(diff(exp(function_temp(intersections)))/(data$dhx))
+  probabilities <- abs(diff(exp(h(intersections)))/(data$dhx))
   sum_prob <- sum(probabilities)
   prob_vector <- probabilities / sum_prob
   

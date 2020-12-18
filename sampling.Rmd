@@ -142,7 +142,7 @@ update_data <- function (data, new_data) {
 # The function exp_sampling takes in a our data structure corresponding to 
 # the x_i, hx_i and d_h_xi
 # exp_sampling will return an array of x_j
-exp_sampling = function(n, x_list, function_temp) {
+exp_sampling = function(n, x_list, h) {
   
   # Grab the number of rows
   k = x_list$k
