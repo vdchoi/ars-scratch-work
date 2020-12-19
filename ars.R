@@ -10,7 +10,7 @@ library(assertthat)
 #' using the Adaptive Rejection Sampling method described in Gilks et al (1992)
 #' 
 #'
-#' @param g input density function
+#' @param g input density function, potentially vectorized
 #' @param a lower bound of function domain D (could be -Inf)
 #' @param b upper bound of function domain D (could be Inf)
 #' @param N number of observations required 

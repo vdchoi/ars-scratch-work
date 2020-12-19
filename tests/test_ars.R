@@ -5,7 +5,7 @@ source('../utils.R')
 source('../steps.R')
 source('../ars.R')
 
-test_that("Test ARS on standard normal distribution, 
+test_that("Test ARS on standard normal distribution,
           comparing mean/std with theoretical values 0/1", {
   set.seed(1)
   g <- function (x) {
@@ -48,7 +48,6 @@ test_that("Test ARS on a density function that is not bounded (g(x) = 1, D = (-I
   g <- function (x) {
     return(1)
   }
-  
   expect_error(ars(g, a = -Inf, b = 1, N = 100000))
 })
 
